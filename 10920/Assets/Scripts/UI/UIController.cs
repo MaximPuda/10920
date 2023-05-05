@@ -1,31 +1,76 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System;
 
-public class UIController : MonoBehaviour
-{
+public class UIController : Controller
+{ 
     [SerializeField] private UICounter _lifesCounter;
+    [SerializeField] private UICounter _oxygenCounter;
+    [SerializeField] private UIScreen _hud;
+    [SerializeField] private UIScreen _menu;
+    [SerializeField] private UIScreen _die;
+    [SerializeField] private UIScreen _win;
 
     private PlayerController _player;
 
-    private void Awake()
+    private float _maxOxygen;
+
+    public override void Init()
     {
+        base.Init();
+
         _player = FindObjectOfType<PlayerController>();
-    }
+        _maxOxygen = _player.MaxOxygen;
 
-    private void OnEnable()
-    {
         _player.LifesChangeEvent += LifesUpdate;
+        _player.OxygenChangeEvent += OxygenUpdate;
     }
 
-    private void OnDisable()
+    public override void OnDisableController()
     {
+        base.OnDisableController();
+
         _player.LifesChangeEvent -= LifesUpdate;
+        _player.OxygenChangeEvent -= OxygenUpdate;
+    }
+
+    public override void OnMenu()
+    {
+        base.OnMenu();
+
+        _die.Hide();
+        _menu.Show();
+    }
+
+    public override void OnRun()
+    {
+        base.OnRun();
+
+        _hud.Show();
+        _menu.Hide();
+    }
+
+    public override void OnDie()
+    {
+        base.OnDie();
+
+        _hud.Hide();
+        _die.Show();
+    }
+
+    public override void OnWin()
+    {
+        base.OnWin();
     }
 
     private void LifesUpdate(int lifes)
     {
         _lifesCounter.SetCounter(lifes);
+    }
+
+    private void OxygenUpdate(float oxygen) 
+    {
+        Debug.Log(oxygen / _maxOxygen);
+        _oxygenCounter.SetCounter((int)(oxygen));
     }
 }

@@ -1,11 +1,9 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Events;
 
 [RequireComponent(typeof(PlayerInput))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : Controller
 {
     private const float ANGULAR_DRAG_IN_MOVING = 10;
 
@@ -17,13 +15,17 @@ public class PlayerController : MonoBehaviour
 
     [Header("DATA")]
     [SerializeField] private int _startLifes;
-    [SerializeField] private int _oxygen;
+    [SerializeField] private float _maxOxygen;
+    [SerializeField] private float _oxygenRate;
     [Space(5)]
 
     [Header("FX")]
-    [SerializeField] private ParticleSystem _bulb;
+    [SerializeField] private GameObject _flashesFX;
+
+    public float MaxOxygen => _maxOxygen;
 
     public event UnityAction<int> LifesChangeEvent;
+    public event UnityAction<float> OxygenChangeEvent;
     public event UnityAction HaveDamageEvent;
 
     private PlayerInput _input;
@@ -31,29 +33,65 @@ public class PlayerController : MonoBehaviour
     private float _angularDragStandart;
     private Vector2 _direction;
 
-    private int _currrentLifes;
+    private int _currentLifes;
+    private int _currentCoins;
+    private float _currentOxygen;
 
-    private void Awake()
+    private bool _blocked;
+
+    public override void Init()
     {
+        base.Init();
+
         _input = GetComponent<PlayerInput>();
-        _rb = GetComponent<Rigidbody2D>();
-        _angularDragStandart = _rb.angularDrag;
-        _currrentLifes = _startLifes;
-    }
-
-    private void OnEnable()
-    {
         _input.TouchInputEvent += SetDirection;
+
+        _rb = GetComponent<Rigidbody2D>();
+
+        _angularDragStandart = _rb.angularDrag;
+        _currentLifes = _startLifes;
+        _currentCoins = 0;
+        _blocked = false;
+        _currentOxygen = _maxOxygen;
     }
 
-    private void OnDisable()
+    public override void OnDisableController()
     {
+        base.OnDisableController();
+
         _input.TouchInputEvent -= SetDirection;
+    }
+
+    public override void OnMenu()
+    {
+        base.OnMenu();
+
+        _blocked = true;
+    }
+
+    public override void OnRun()
+    {
+        base.OnRun();
+
+        _blocked = false;
+    }
+
+    public override void OnDie()
+    {
+        base.OnDie();
+
+        _blocked = true;
+    }
+
+    private void Update()
+    {
+        //ApplyOxygen();    
     }
 
     private void FixedUpdate()
     {
-        Move();
+        if (!_blocked)
+            Move();
     }
 
     public void SetDirection(Vector3 direction)
@@ -73,30 +111,75 @@ public class PlayerController : MonoBehaviour
         {
             _rb.angularDrag = ANGULAR_DRAG_IN_MOVING;
             _mover.Translate(_moverPos * _verticalSpeed * Time.deltaTime);
-            _bulb.Play();
         }
         else
         {
             _rb.angularDrag = _angularDragStandart;
-            _bulb.Stop();
         }    
+    }
+
+    private void ApplyOxygen()
+    {
+        float used = _oxygenRate * Time.deltaTime;
+        _currentOxygen -= used;
+
+        OxygenChangeEvent?.Invoke(_currentOxygen);
+
+        if (_currentOxygen <= 0)
+            Die();
     }
 
     public void ApplyDamage()
     {
-        _currrentLifes--;
+        _currentLifes--;
 
-        LifesChangeEvent?.Invoke(_currrentLifes);
+        LifesChangeEvent?.Invoke(_currentLifes);
         HaveDamageEvent?.Invoke();
 
-        if (_currrentLifes <= 0)
+        if (_currentLifes <= 0)
         {
             Die();
         }
     }
 
+    public void ApplyForce(Vector2 force)
+    {
+        Block(0.5f, false);
+        _rb.AddForce(force);
+    }
+
+    public void Block(float seconds, bool fx)
+    {
+        StartCoroutine(BlockCoroutine(seconds, fx));
+    }
+
+    public void AddCoins(int coins) => _currentCoins += coins;
+
+    public void AddOxygen(float oxygen)
+    { 
+        _currentOxygen += oxygen;
+
+        if (_currentOxygen >= _maxOxygen)
+            _currentOxygen = _maxOxygen;
+
+        OxygenChangeEvent?.Invoke(_currentOxygen);
+    }
+
     private void Die()
     {
-        GameManager.Instance.GameOver();
+        GameManager.Instance.Die();
+    }
+
+    private IEnumerator BlockCoroutine(float seconds, bool fx)
+    {
+        if (fx)
+            _flashesFX.SetActive(true);
+     
+        _blocked = true;
+
+        yield return new WaitForSeconds(seconds);
+
+        _blocked = false;
+        _flashesFX.SetActive(false);
     }
 }

@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ChunkController : MonoBehaviour
+public class ChunkController : Controller
 {
     [SerializeField] private Chunk[] _chunks;
+    [SerializeField] private Chunk _startChunk;
     [SerializeField] private int _amonut;
     [SerializeField] private float _chunkSpeed = 2f;
     [SerializeField] private float _destroyDistance = 10f;
@@ -11,17 +12,47 @@ public class ChunkController : MonoBehaviour
     private Chunk _lastChunk;
     private List<Chunk> _activeChunks = new();
 
-    private void Start()
+    private bool _isRun;
+
+    public override void Init()
     {
-        _lastChunk = FindObjectOfType<Chunk>();
-        _activeChunks.Add(_lastChunk);
+        base.Init();
+
+        if (_startChunk != null)
+        {
+            _lastChunk = FindObjectOfType<Chunk>();
+            _activeChunks.Add(_lastChunk);
+        }
+    }
+
+    public override void OnMenu()
+    {
+        base.OnMenu();
+        _isRun = false;
+    }
+
+    public override void OnRun()
+    {
+        base.OnRun();
+
+        _isRun = true;
+    }
+
+    public override void OnDie()
+    {
+        base.OnDie();
+
+        _isRun = false;
     }
 
     private void Update()
     {
-        CheckCount();
-        MoveChunks();
-        CheckDistance();
+        if (_isRun)
+        {
+            CheckCount();
+            MoveChunks();
+            CheckDistance();
+        }
     }
 
     private void CheckCount()
@@ -53,8 +84,10 @@ public class ChunkController : MonoBehaviour
         var prefab = GetRandomChunk();
 
         var newChunk = Instantiate(prefab, transform);
-        newChunk.transform.position = _lastChunk.End.position;
-        
+        if (_lastChunk != null)
+            newChunk.transform.position = _lastChunk.End.position;
+        else newChunk.transform.position = Vector3.zero;
+
         _lastChunk = newChunk;
         _activeChunks.Add(newChunk);
     }

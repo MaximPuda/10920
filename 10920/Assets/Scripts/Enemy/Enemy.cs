@@ -1,19 +1,17 @@
 using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(SpriteRenderer), typeof(Collider2D))]
+[RequireComponent(typeof(Collider2D))]
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private bool _destroyOnCollision;
     [SerializeField] private GameObject _veiw;
     [SerializeField] private ParticleSystem _particles;
 
-    private SpriteRenderer _renderer;
     private Collider2D _collider;
 
     private void Awake()
-    {
-        _renderer = GetComponent<SpriteRenderer>();
+    { 
         _collider = GetComponent<Collider2D>();
     }
 
@@ -32,7 +30,6 @@ public class Enemy : MonoBehaviour
 
     public void Die()
     {
-        _renderer.enabled = false;
         _collider.enabled = false;
         
         if(_veiw != null)

@@ -1,10 +1,8 @@
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 
 public class PlayerInput : MonoBehaviour
 {
-    [SerializeField] private LineRenderer _handler;
     [SerializeField] private float _maxTouchDistance;
     [SerializeField] private float _deadZone = 1f;
 
