@@ -1,35 +1,16 @@
 using System.Collections;
 using UnityEngine;
-using static UnityEngine.ParticleSystem;
 
-public class Coin : MonoBehaviour
+public class Coin : Item
 {
-    [SerializeField] private ParticleSystem _dieFx;
+    [SerializeField] private int _coins = 1;
 
-    private SpriteRenderer _renderer;
-
-    private void Awake()
+    public override void InteractWithPlayer(PlayerController player)
     {
-        _renderer = GetComponentInChildren<SpriteRenderer>();
+        base.InteractWithPlayer(player);
+
+        player.AddCoins(_coins);
+        Die();
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.TryGetComponent<PlayerController>(out PlayerController player))
-            Die();
-    }
-
-    private void Die()
-    {
-        _renderer.enabled = false;
-        _dieFx.Play();
-
-        StartCoroutine(DestroyCoroutine());
-    }
-
-    private IEnumerator DestroyCoroutine()
-    {
-        yield return new WaitForSeconds(_dieFx.main.duration + 1);
-        Destroy(gameObject);
-    }
 }

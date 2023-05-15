@@ -9,8 +9,10 @@ public class PlayerController : Controller
 
     [Header("MOVE")]
     [SerializeField] private Transform _mover;
+    [SerializeField] private HingeJoint2D _hingeJoint;
     [SerializeField] private float _verticalSpeed;
     [SerializeField] private float _horizontalSpeed;
+    [SerializeField] private float _changeSphereForce;
     [Space(5)]
 
     [Header("DATA")]
@@ -21,6 +23,7 @@ public class PlayerController : Controller
 
     [Header("FX")]
     [SerializeField] private GameObject _flashesFX;
+    [SerializeField] private ParticleSystem _bublesFX;
 
     public float MaxOxygen => _maxOxygen;
 
@@ -30,14 +33,21 @@ public class PlayerController : Controller
 
     private PlayerInput _input;
     private Rigidbody2D _rb;
+    private Animation _anim;
+    private DistanceJoint2D _distanceJoint;
+
     private float _angularDragStandart;
     private Vector2 _direction;
+    private Batisphere[] _spheres;
+    private Batisphere _activeSphere;
+    private int _activeSphereIndex;
 
     private int _currentLifes;
     private int _currentCoins;
     private float _currentOxygen;
 
-    private bool _blocked;
+    private bool _isRunnig;
+    private bool _isBlocked;
 
     public override void Init()
     {
@@ -47,12 +57,31 @@ public class PlayerController : Controller
         _input.TouchInputEvent += SetDirection;
 
         _rb = GetComponent<Rigidbody2D>();
+        _anim = GetComponent<Animation>();
+        _distanceJoint = GetComponent<DistanceJoint2D>();
 
         _angularDragStandart = _rb.angularDrag;
         _currentLifes = _startLifes;
         _currentCoins = 0;
-        _blocked = false;
+        _isBlocked = false;
         _currentOxygen = _maxOxygen;
+
+        _spheres = GetComponentsInChildren<Batisphere>();
+        
+        if (_spheres == null)
+        {
+            Debug.LogWarning("Batisphere is not assigned to the player!");
+            return;
+        }
+
+
+        if(_spheres.Length > 1)
+            foreach (var sphere in _spheres)
+                sphere.gameObject.SetActive(false);
+
+        _activeSphere = _spheres[0];
+        _activeSphere.gameObject.SetActive(true);
+        _activeSphereIndex = 0;
     }
 
     public override void OnDisableController()
@@ -66,31 +95,42 @@ public class PlayerController : Controller
     {
         base.OnMenu();
 
-        _blocked = true;
+        _distanceJoint.enabled = false;
+
+        _isBlocked = true;
+        _isRunnig = false;
     }
 
     public override void OnRun()
     {
         base.OnRun();
 
-        _blocked = false;
+        _distanceJoint.enabled = true;
+
+        _isBlocked = false;
+        _isRunnig = true;
     }
 
     public override void OnDie()
     {
         base.OnDie();
+        
+        _distanceJoint.enabled = false;
+        _hingeJoint.enabled = false;
 
-        _blocked = true;
+        _isBlocked = true;
+        _isRunnig = false;
     }
 
     private void Update()
     {
-        //ApplyOxygen();    
+        if (_isRunnig)
+            ApplyOxygen();    
     }
 
     private void FixedUpdate()
     {
-        if (!_blocked)
+        if (!_isBlocked)
             Move();
     }
 
@@ -104,6 +144,9 @@ public class PlayerController : Controller
 
     private void Move()
     {
+        if (!_isRunnig)
+            return;
+
         _rb.AddForce(_direction * _horizontalSpeed);
 
         Vector2 _moverPos = new Vector2(0, _direction.y);
@@ -120,6 +163,9 @@ public class PlayerController : Controller
 
     private void ApplyOxygen()
     {
+        if (!_isRunnig)
+            return;
+
         float used = _oxygenRate * Time.deltaTime;
         _currentOxygen -= used;
 
@@ -131,7 +177,11 @@ public class PlayerController : Controller
 
     public void ApplyDamage()
     {
+        if (!_isRunnig)
+            return;
+
         _currentLifes--;
+        _activeSphere.OnDamage();
 
         LifesChangeEvent?.Invoke(_currentLifes);
         HaveDamageEvent?.Invoke();
@@ -153,7 +203,13 @@ public class PlayerController : Controller
         StartCoroutine(BlockCoroutine(seconds, fx));
     }
 
-    public void AddCoins(int coins) => _currentCoins += coins;
+    public void AddCoins(int coins)
+    {
+        if (!_isRunnig)
+            return;
+
+        _currentCoins += coins;
+    }
 
     public void AddOxygen(float oxygen)
     { 
@@ -167,7 +223,37 @@ public class PlayerController : Controller
 
     private void Die()
     {
+        _activeSphere.OnDie();
+
         GameManager.Instance.Die();
+    }
+
+    public void SetNextSphere()
+    {
+        if (_activeSphereIndex + 1 < _spheres.Length)
+        {
+            _spheres[_activeSphereIndex].gameObject.SetActive(false);
+            _activeSphereIndex++;
+            _activeSphere = _spheres[_activeSphereIndex];
+            _activeSphere.gameObject.SetActive(true);
+
+            _rb.AddForce(Vector3.up * _changeSphereForce);
+            _bublesFX.Emit(30);
+        }
+    }
+
+    public void SetPrevSpehre()
+    {
+        if (_activeSphereIndex - 1 >= 0)
+        {
+            _spheres[_activeSphereIndex].gameObject.SetActive(false);
+            _activeSphereIndex--;
+            _activeSphere = _spheres[_activeSphereIndex];
+            _activeSphere.gameObject.SetActive(true);
+
+            _rb.AddForce(Vector3.up * _changeSphereForce);
+            _bublesFX.Emit(30);
+        }
     }
 
     private IEnumerator BlockCoroutine(float seconds, bool fx)
@@ -175,11 +261,11 @@ public class PlayerController : Controller
         if (fx)
             _flashesFX.SetActive(true);
      
-        _blocked = true;
+        _isBlocked = true;
 
         yield return new WaitForSeconds(seconds);
 
-        _blocked = false;
+        _isBlocked = false;
         _flashesFX.SetActive(false);
     }
 }

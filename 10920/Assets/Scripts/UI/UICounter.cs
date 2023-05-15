@@ -2,19 +2,19 @@ using UnityEngine;
 
 public class UICounter : MonoBehaviour
 {
-    [SerializeField] private GameObject[] _items;
+    [SerializeField] protected GameObject[] Items;
 
     private void ResetCounter()
     {
-        foreach (var item in _items)
+        foreach (var item in Items)
             item.SetActive(false);
     }
 
-    public void SetCounter(int count)
+    virtual public void SetCounter(int count)
     {
         ResetCounter();
 
         for (int i = 0; i < count; i++)
-            _items[i].SetActive(true);
+            Items[i].SetActive(true);
     }
 }

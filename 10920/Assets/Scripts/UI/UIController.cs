@@ -5,7 +5,7 @@ using System;
 public class UIController : Controller
 { 
     [SerializeField] private UICounter _lifesCounter;
-    [SerializeField] private UICounter _oxygenCounter;
+    [SerializeField] private BubbleCounter _oxygenCounter;
     [SerializeField] private UIScreen _hud;
     [SerializeField] private UIScreen _menu;
     [SerializeField] private UIScreen _die;
@@ -70,7 +70,6 @@ public class UIController : Controller
 
     private void OxygenUpdate(float oxygen) 
     {
-        Debug.Log(oxygen / _maxOxygen);
-        _oxygenCounter.SetCounter((int)(oxygen));
+        _oxygenCounter.SetCounter(oxygen);
     }
 }
