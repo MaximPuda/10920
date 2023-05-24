@@ -7,7 +7,7 @@ public class UIController : Controller
     [SerializeField] private UICounter _lifesCounter;
     [SerializeField] private BubbleCounter _oxygenCounter;
     [SerializeField] private UIScreen _hud;
-    [SerializeField] private UIScreen _menu;
+    [SerializeField] private Menu _menu;
     [SerializeField] private UIScreen _die;
     [SerializeField] private UIScreen _win;
 
@@ -66,10 +66,12 @@ public class UIController : Controller
     private void LifesUpdate(int lifes)
     {
         _lifesCounter.SetCounter(lifes);
+        _menu.SetLifes(lifes);
     }
 
     private void OxygenUpdate(float oxygen) 
     {
         _oxygenCounter.SetCounter(oxygen);
+        _menu.SetOxygen((int)oxygen);
     }
 }

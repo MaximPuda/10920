@@ -49,7 +49,6 @@ public class CameraShake : Controller
     public void Shake()
     {
         _animator.SetTrigger("Shake");
-        //StartCoroutine(ShakeCoroutine());
     }
 
     private IEnumerator ShakeCoroutine()

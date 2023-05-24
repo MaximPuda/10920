@@ -10,14 +10,14 @@ public class PlayerController : Controller
     [Header("MOVE")]
     [SerializeField] private Transform _mover;
     [SerializeField] private HingeJoint2D _hingeJoint;
-    [SerializeField] private float _verticalSpeed;
+    //[SerializeField] private float _verticalSpeed;
     [SerializeField] private float _horizontalSpeed;
     [SerializeField] private float _changeSphereForce;
     [Space(5)]
 
     [Header("DATA")]
-    [SerializeField] private int _startLifes;
-    [SerializeField] private float _maxOxygen;
+    //[SerializeField] private int _startLifes;
+    //[SerializeField] private float _maxOxygen;
     [SerializeField] private float _oxygenRate;
     [Space(5)]
 
@@ -25,7 +25,7 @@ public class PlayerController : Controller
     [SerializeField] private GameObject _flashesFX;
     [SerializeField] private ParticleSystem _bublesFX;
 
-    public float MaxOxygen => _maxOxygen;
+    public float MaxOxygen => _activeSphere.MaxOxygen ;
 
     public event UnityAction<int> LifesChangeEvent;
     public event UnityAction<float> OxygenChangeEvent;
@@ -61,10 +61,8 @@ public class PlayerController : Controller
         _distanceJoint = GetComponent<DistanceJoint2D>();
 
         _angularDragStandart = _rb.angularDrag;
-        _currentLifes = _startLifes;
         _currentCoins = 0;
         _isBlocked = false;
-        _currentOxygen = _maxOxygen;
 
         _spheres = GetComponentsInChildren<Batisphere>();
         
@@ -74,7 +72,6 @@ public class PlayerController : Controller
             return;
         }
 
-
         if(_spheres.Length > 1)
             foreach (var sphere in _spheres)
                 sphere.gameObject.SetActive(false);
@@ -82,6 +79,8 @@ public class PlayerController : Controller
         _activeSphere = _spheres[0];
         _activeSphere.gameObject.SetActive(true);
         _activeSphereIndex = 0;
+
+        ResetStartVelues();
     }
 
     public override void OnDisableController()
@@ -91,11 +90,23 @@ public class PlayerController : Controller
         _input.TouchInputEvent -= SetDirection;
     }
 
+    private void ResetStartVelues()
+    {
+        _currentLifes = _activeSphere.StartLifes;
+        _currentOxygen = _activeSphere.MaxOxygen;
+
+        LifesChangeEvent?.Invoke(_currentLifes);
+        OxygenChangeEvent?.Invoke(_currentOxygen);
+    }
+
     public override void OnMenu()
     {
         base.OnMenu();
 
         _distanceJoint.enabled = false;
+
+        LifesChangeEvent?.Invoke(_currentLifes);
+        OxygenChangeEvent?.Invoke(_currentOxygen);
 
         _isBlocked = true;
         _isRunnig = false;
@@ -106,6 +117,9 @@ public class PlayerController : Controller
         base.OnRun();
 
         _distanceJoint.enabled = true;
+
+        LifesChangeEvent?.Invoke(_currentLifes);
+        OxygenChangeEvent?.Invoke(_currentOxygen);
 
         _isBlocked = false;
         _isRunnig = true;
@@ -153,7 +167,7 @@ public class PlayerController : Controller
         if (_moverPos.magnitude > 0.01f)
         {
             _rb.angularDrag = ANGULAR_DRAG_IN_MOVING;
-            _mover.Translate(_moverPos * _verticalSpeed * Time.deltaTime);
+            _mover.Translate(_moverPos * _activeSphere.VerticalSpeed * Time.deltaTime);
         }
         else
         {
@@ -215,8 +229,8 @@ public class PlayerController : Controller
     { 
         _currentOxygen += oxygen;
 
-        if (_currentOxygen >= _maxOxygen)
-            _currentOxygen = _maxOxygen;
+        if (_currentOxygen >= _activeSphere.MaxOxygen)
+            _currentOxygen = _activeSphere.MaxOxygen;
 
         OxygenChangeEvent?.Invoke(_currentOxygen);
     }
@@ -237,6 +251,8 @@ public class PlayerController : Controller
             _activeSphere = _spheres[_activeSphereIndex];
             _activeSphere.gameObject.SetActive(true);
 
+            ResetStartVelues();
+
             _rb.AddForce(Vector3.up * _changeSphereForce);
             _bublesFX.Emit(30);
         }
@@ -250,6 +266,8 @@ public class PlayerController : Controller
             _activeSphereIndex--;
             _activeSphere = _spheres[_activeSphereIndex];
             _activeSphere.gameObject.SetActive(true);
+
+            ResetStartVelues();
 
             _rb.AddForce(Vector3.up * _changeSphereForce);
             _bublesFX.Emit(30);

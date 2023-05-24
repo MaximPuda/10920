@@ -181,12 +181,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _mover: {fileID: 0}
   _hingeJoint: {fileID: 0}
-  _verticalSpeed: 1
   _horizontalSpeed: 100
   _changeSphereForce: 1000
-  _startLifes: 3
-  _maxOxygen: 3
-  _oxygenRate: 0.05
+  _oxygenRate: 0.03
   _flashesFX: {fileID: 6496894699162278663}
   _bublesFX: {fileID: 1949722889396267729}
 --- !u!1 &6496894700446695574
@@ -399,6 +396,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f72e8c98b7044c41a76644829dbe5c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _startLifes: 1
+  _maxOxygen: 1
+  _verticalSpeed: 0.5
 --- !u!95 &3283600136851819456
 Animator:
   serializedVersion: 5
@@ -5728,6 +5728,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f72e8c98b7044c41a76644829dbe5c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _startLifes: 2
+  _maxOxygen: 2
+  _verticalSpeed: 0.75
 --- !u!95 &68977264
 Animator:
   serializedVersion: 5
@@ -6220,6 +6223,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f72e8c98b7044c41a76644829dbe5c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _startLifes: 2
+  _maxOxygen: 1
+  _verticalSpeed: 0.5
 --- !u!95 &1158031987
 Animator:
   serializedVersion: 5
@@ -6340,6 +6346,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f72e8c98b7044c41a76644829dbe5c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _startLifes: 0
+  _maxOxygen: 0
+  _verticalSpeed: 0
 --- !u!95 &1571524447
 Animator:
   serializedVersion: 5
@@ -6460,6 +6469,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f72e8c98b7044c41a76644829dbe5c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _startLifes: 3
+  _maxOxygen: 3
+  _verticalSpeed: 1
 --- !u!95 &2022193915
 Animator:
   serializedVersion: 5
