@@ -10,6 +10,7 @@ public class Controller : MonoBehaviour
         _gm.RunEvent -= OnRun;
         _gm.DieEvent -= OnDie;
         _gm.WinEvent -= OnWin;
+        _gm.PauseEvent -= OnPause;
 
         OnDisableController();
     }
@@ -22,6 +23,7 @@ public class Controller : MonoBehaviour
         _gm.RunEvent += OnRun;
         _gm.DieEvent += OnDie;
         _gm.WinEvent += OnWin;
+        _gm.PauseEvent += OnPause;
     }
 
     public virtual void OnEnableController() { }
@@ -35,4 +37,6 @@ public class Controller : MonoBehaviour
     public virtual void OnDie() { }
 
     public virtual void OnWin() { }
+
+    public virtual void OnPause() { }
 }

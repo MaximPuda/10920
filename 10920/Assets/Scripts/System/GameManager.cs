@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     public event UnityAction RunEvent;
     public event UnityAction DieEvent;
     public event UnityAction WinEvent;
+    public event UnityAction PauseEvent;
 
     private void Awake()
     {
@@ -61,5 +62,24 @@ public class GameManager : MonoBehaviour
     {
         var scene = SceneManager.GetActiveScene().buildIndex;
         SceneManager.LoadScene(scene);
+    }
+
+    public void Pause()
+    {
+        //State = GameState.Pause;
+
+        if(State == GameState.Run)
+        {
+            State = GameState.Pause;
+            Time.timeScale = 0f;
+            PauseEvent?.Invoke();
+        }
+
+        if(State == GameState.Pause) 
+        {
+            State = GameState.Run;
+            Time.timeScale = 1f;
+            PauseEvent?.Invoke();
+        }
     }
 }

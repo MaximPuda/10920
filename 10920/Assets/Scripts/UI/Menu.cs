@@ -8,7 +8,6 @@ public class Menu : UIScreen
     public void OnPlayBTN() => GameManager.Instance.Run();
 
     public void SetLifes(int lifes) => _lifes.SetCounter(lifes);
-  
 
     public void SetOxygen(int oxygen) => _oxygen.SetCounter(oxygen);
 }

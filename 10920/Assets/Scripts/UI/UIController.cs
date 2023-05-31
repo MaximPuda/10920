@@ -8,6 +8,7 @@ public class UIController : Controller
     [SerializeField] private BubbleCounter _oxygenCounter;
     [SerializeField] private UIScreen _hud;
     [SerializeField] private Menu _menu;
+    [SerializeField] private Animator _mainMenuEnvAnimator;
     [SerializeField] private UIScreen _die;
     [SerializeField] private UIScreen _win;
 
@@ -48,6 +49,7 @@ public class UIController : Controller
 
         _hud.Show();
         _menu.Hide();
+        _mainMenuEnvAnimator.SetBool("Run", true);
     }
 
     public override void OnDie()
@@ -62,6 +64,7 @@ public class UIController : Controller
     {
         base.OnWin();
     }
+
 
     private void LifesUpdate(int lifes)
     {

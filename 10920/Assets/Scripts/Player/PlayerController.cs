@@ -6,18 +6,16 @@ using UnityEngine.Events;
 public class PlayerController : Controller
 {
     private const float ANGULAR_DRAG_IN_MOVING = 10;
+    private const float LOW_OXYGEN_TRESHOLD = 0.2f;
 
     [Header("MOVE")]
     [SerializeField] private Transform _mover;
     [SerializeField] private HingeJoint2D _hingeJoint;
-    //[SerializeField] private float _verticalSpeed;
     [SerializeField] private float _horizontalSpeed;
     [SerializeField] private float _changeSphereForce;
     [Space(5)]
 
     [Header("DATA")]
-    //[SerializeField] private int _startLifes;
-    //[SerializeField] private float _maxOxygen;
     [SerializeField] private float _oxygenRate;
     [Space(5)]
 
@@ -30,6 +28,7 @@ public class PlayerController : Controller
     public event UnityAction<int> LifesChangeEvent;
     public event UnityAction<float> OxygenChangeEvent;
     public event UnityAction HaveDamageEvent;
+    public event UnityAction<bool> LowOxygenEvent;
 
     private PlayerInput _input;
     private Rigidbody2D _rb;
@@ -48,6 +47,7 @@ public class PlayerController : Controller
 
     private bool _isRunnig;
     private bool _isBlocked;
+    private bool _isOxygenLow;
 
     public override void Init()
     {
@@ -184,6 +184,18 @@ public class PlayerController : Controller
         _currentOxygen -= used;
 
         OxygenChangeEvent?.Invoke(_currentOxygen);
+
+        if (_currentOxygen <= LOW_OXYGEN_TRESHOLD && !_isOxygenLow)
+        {
+            LowOxygenEvent?.Invoke(true);
+            _isOxygenLow = true;
+        }
+
+        if (_currentOxygen > LOW_OXYGEN_TRESHOLD && _isOxygenLow)
+        {
+            LowOxygenEvent?.Invoke(false);
+            _isOxygenLow = false;
+        }
 
         if (_currentOxygen <= 0)
             Die();

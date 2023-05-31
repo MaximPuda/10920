@@ -1,4 +1,4 @@
 public enum GameState
 {
-   Menu, Run, Die, Win
+   Menu, Run, Die, Win, Pause
 }
